@@ -1,7 +1,7 @@
 id=brightness_lock
 name=亮度锁定器
-version=v1.3
-versionCode=4
-author=life
-description=解决温控降亮度：常驻守护屏幕亮度，被压低时拉回目标值。默认关闭，KSU WebUI 开关控制。
+version=v1.4
+versionCode=5
+author=酷安@星陨Lite
+description=解决温控降亮度：常驻守护屏幕亮度，被压低时拉回目标值。默认关闭，KSU/APatch WebUI 开关控制，兼容 Magisk/狐狸面具。
 webui=true
