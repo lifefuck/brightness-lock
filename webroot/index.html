@@ -353,6 +353,10 @@ input[type=range]::-webkit-slider-thumb {
 <script type="module">
 // ============================================================
 // KSU WebUI JavaScript —— 通过 ksu.exec 执行 root 命令
+// v1.1 修复：
+//   - module 作用域函数挂到 window（否则 HTML onclick 找不到）
+//   - 守护进程检测改用 pgrep -f（ps -A 进程名会截断）
+//   - 配置写入值做数字校验，杜绝注入
 // ============================================================
 
 // exec 封装：调用 WebView 注入的全局 ksu 对象
@@ -380,6 +384,12 @@ const BRIGHTNESS = '/sys/class/backlight/panel0-backlight/brightness';
 // DOM 引用
 const $ = (id) => document.getElementById(id);
 
+// ---------- 数字校验 ----------
+function safeNum(v, def) {
+    const n = parseInt(v);
+    return isNaN(n) ? def : n;
+}
+
 // ---------- 读取配置 ----------
 async function readConfig() {
     const { stdout } = await ksuExec(`cat ${CONFIG} 2>/dev/null || echo "enabled=1 target=4095 interval=2"`);
@@ -393,16 +403,20 @@ async function readConfig() {
 
 // ---------- 写入配置 ----------
 async function writeConfig(key, value) {
+    // 值强制数字化，防止特殊字符破坏配置
+    const safeValue = safeNum(value, 0);
     const { stdout } = await ksuExec(`cat ${CONFIG} 2>/dev/null`);
     let lines = stdout.split('\n').filter(l => l.trim());
     let found = false;
     lines = lines.map(l => {
-        if (l.startsWith(key + '=')) { found = true; return key + '=' + value; }
+        if (l.startsWith(key + '=')) { found = true; return key + '=' + safeValue; }
         return l;
     });
-    if (!found) lines.push(key + '=' + value);
+    if (!found) lines.push(key + '=' + safeValue);
     const content = lines.join('\n');
-    await ksuExec(`echo "${content}" > ${CONFIG}; chmod 644 ${CONFIG}`);
+    // 用 base64 方式写入，完全避免特殊字符问题
+    const b64 = btoa(unescape(encodeURIComponent(content)));
+    await ksuExec(`echo "${b64}" | base64 -d > ${CONFIG}; chmod 644 ${CONFIG}`);
 }
 
 // ---------- 刷新所有状态 ----------
@@ -410,8 +424,8 @@ async function refreshAll() {
     // 读取配置
     const cfg = await readConfig();
     const enabled = cfg.enabled === '1';
-    const target = parseInt(cfg.target) || 4095;
-    const interval = parseInt(cfg.interval) || 2;
+    const target = safeNum(cfg.target, 4095);
+    const interval = safeNum(cfg.interval, 2);
 
     // 更新 UI
     $('masterSwitch').className = enabled ? 'switch on' : 'switch';
@@ -429,31 +443,31 @@ async function refreshAll() {
     const cur = await ksuExec(`cat ${BRIGHTNESS} 2>/dev/null`);
     $('curBrightness').textContent = cur.stdout.trim() || '--';
 
-    // 守护进程状态（检测 PID）
-    const ps = await ksuExec(`ps -A | grep daemon.sh | grep -v grep`);
+    // 守护进程状态（pgrep -f 匹配完整命令行，不受进程名截断影响）
+    const ps = await ksuExec(`pgrep -f "brightness_lock/daemon.sh" | head -1`);
     const running = ps.stdout.trim().length > 0;
     const badge = $('daemonBadge');
     badge.textContent = running ? '守护运行中' : '守护未运行';
     badge.className = 'daemon-badge' + (running ? '' : ' off');
 }
 
-// ---------- 开关 ----------
-async function toggleLock() {
+// ---------- 开关（挂到 window 供 onclick 调用） ----------
+window.toggleLock = async function() {
     const cfg = await readConfig();
     const newVal = cfg.enabled === '1' ? '0' : '1';
     await writeConfig('enabled', newVal);
 
     // 开启时立即生效（把亮度拉满）
     if (newVal === '1') {
-        const target = parseInt(cfg.target) || 4095;
+        const target = safeNum(cfg.target, 4095);
         await ksuExec(`echo ${target} > ${BRIGHTNESS}`);
     }
     refreshAll();
-}
+};
 
 // ---------- 目标亮度滑块 ----------
 let targetTimer = null;
-async function onTargetChange(value) {
+window.onTargetChange = function(value) {
     $('targetValue').textContent = value;
     clearTimeout(targetTimer);
     // 防抖：松手后 500ms 写入
@@ -465,22 +479,22 @@ async function onTargetChange(value) {
         }
         refreshAll();
     }, 500);
-}
+};
 
 // ---------- 检查间隔 ----------
-async function setInterval_(sec) {
+window.setInterval_ = async function(sec) {
     await writeConfig('interval', sec);
     document.querySelectorAll('.chip').forEach(c => {
         c.classList.toggle('active', parseInt(c.dataset.interval) === sec);
     });
-}
+};
 
 // ---------- 日志 ----------
-async function refreshLog() {
+window.refreshLog = async function() {
     const { stdout } = await ksuExec(`tail -20 ${MODDIR}/daemon.log 2>/dev/null`);
     $('logContent').textContent = stdout || '（暂无日志）';
     $('logContent').scrollTop = $('logContent').scrollHeight;
-}
+};
 
 // ---------- 初始化 ----------
 window.addEventListener('load', async () => {
