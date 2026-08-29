@@ -161,10 +161,10 @@ A: The daemon auto-detects `/sys/class/backlight/*/brightness`, so it's generic.
 
 ## 📄 License
 
-[MIT](LICENSE) © lite
+[MIT](LICENSE) © life
 
 ---
 
 <p align="center">
-  <sub>Made with ❤️ and 🤖 · lite</sub>
+  <sub>Made with ❤️ and 🤖 · life</sub>
 </p>
