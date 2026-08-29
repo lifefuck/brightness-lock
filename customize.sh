@@ -1,11 +1,12 @@
 #!/system/bin/sh
 # ============================================================
-# 亮度锁定器 - 安装脚本 v1.4
+# 亮度锁定器 - 安装脚本 1.0（正式版）
 # 功能：
 #   1. 检测当前面具环境（Magisk / KSU / 狐狸面具 / APatch）
 #   2. 显示支持的面具列表
 #   3. 不兼容的环境直接退出安装
 #   4. 安装确认：音量上=确认，音量下=取消
+#   5. 临时 Root 说明
 #
 # 兼容矩阵：
 #   ✅ KSU        （KernelSU）      - 完整支持（含 WebUI）
@@ -82,7 +83,7 @@ wait_for_key() {
 MANAGER=$(detect_manager)
 
 ui_print "======================================"
-ui_print "  亮度锁定器 v1.4"
+ui_print "  亮度锁定器 1.0（正式版）"
 ui_print "======================================"
 ui_print ""
 ui_print "  兼容面具："
@@ -92,6 +93,15 @@ ui_print "    ✅ 狐狸面具 Kitsune   - 守护功能"
 ui_print "    ✅ Magisk 官方        - 守护功能"
 ui_print "    （KSU/APatch 带 WebUI 界面，"
 ui_print "      Magisk/狐狸无 WebUI，用终端命令控制）"
+ui_print ""
+ui_print "  ⚠️  临时 Root 说明："
+ui_print "  - 本模块不修改系统分区（只写 /data/adb）"
+ui_print "  - 临时 Root（重启失效）可以安装，"
+ui_print "    但重启后无 Root 环境不会自动生效"
+ui_print "  - 需重新获取 Root 后手动启动守护，"
+ui_print "    或改用持久 Root（KSU/Magisk/APatch）"
+ui_print "  - 卸载干净：删除模块即完全移除，"
+ui_print "    守护进程自动退出，无残留"
 ui_print ""
 
 case "$MANAGER" in

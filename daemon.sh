@@ -68,7 +68,7 @@ read_config() {
             ''|*[!0-9]*) CUR_NOW=4095 ;;  # 读不到就用最大
         esac
         echo "target=$CUR_NOW" >> "$CONFIG"
-        echo "interval=2" >> "$CONFIG"
+        echo "interval=1" >> "$CONFIG"
         echo "target_set=0" >> "$CONFIG"
         chmod 644 "$CONFIG"
     fi
@@ -81,7 +81,7 @@ read_config() {
     # 默认值兜底（严格数字校验，杜绝非法值）
     [ -z "$ENABLED" ] && ENABLED=0
     TARGET=$(safe_int "$TARGET" "")
-    INTERVAL=$(safe_int "$INTERVAL" 2)
+    INTERVAL=$(safe_int "$INTERVAL" 1)
 
     # target 为空且未设置过（target_set=0）→ 自动填充为系统当前亮度
     TARGET_SET=$(grep -E "^target_set=" "$CONFIG" 2>/dev/null | cut -d= -f2 | tr -d ' \r')
@@ -165,9 +165,19 @@ main() {
         exit 1
     fi
 
-    log "亮度守护启动，节点=$BRIGHTNESS，目标=4095，间隔=2s"
+    log "亮度守护启动，节点=$BRIGHTNESS，目标=4095，间隔=1s"
 
     while true; do
+        # ========== 模块删除检测（KSU/Magisk 卸载自愈） ==========
+        # KSU 删除模块时清理目录，但守护进程还活着会继续写亮度/重建config
+        # 检测：module.prop 消失（目录被删）或存在 remove 标记 → 自杀退出
+        if [ ! -f "$MODDIR/module.prop" ] || [ -f "$MODDIR/remove" ] || [ -f "$MODDIR/.remove" ]; then
+            # 清理 pid 文件，退出（日志目录可能已被删，写入失败忽略）
+            rm -f "$LOCK_FILE" 2>/dev/null
+            echo "[$(date '+%m-%d %H:%M:%S')] 模块已删除，守护退出" >> "$LOG" 2>/dev/null
+            exit 0
+        fi
+
         # 重新读取配置（WebUI 修改实时生效）
         read_config
 
