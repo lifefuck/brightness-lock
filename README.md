@@ -48,6 +48,18 @@
 
 ---
 
+## 📱 机型测试声明
+
+| 状态 | 说明 |
+|------|------|
+| ✅ 实测通过 | **小米 14 Pro**（KSU root） |
+| 🟡 预计可用 | 同型号屏幕设备 |
+| ⚠️ 未测试 | 其他机型 —— **请自行测试** |
+
+守护进程会自动探测亮度节点（`/sys/class/backlight/*/brightness`），通用性较好，但**不同厂商内核 / SELinux 策略存在差异，不保证全部兼容**。遇到问题欢迎提交 [Issue](https://github.com/lifefuck/brightness-lock/issues)。
+
+---
+
 ## 📦 安装
 
 ### 前置要求

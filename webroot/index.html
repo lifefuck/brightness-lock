@@ -288,7 +288,7 @@ input[type=range]::-webkit-slider-thumb {
 <div class="master-card" id="masterCard">
     <div class="master-info">
         <h2>锁定亮度</h2>
-        <p>默认关闭 · 开启后屏幕亮度被压低时自动拉回 <b id="targetDisplay">4095</b></p>
+        <p>默认关闭 · 开启后屏幕亮度被压低时自动拉回 <b id="targetDisplay">--</b></p>
     </div>
     <div class="switch" id="masterSwitch" onclick="toggleLock()"></div>
 </div>
@@ -298,7 +298,7 @@ input[type=range]::-webkit-slider-thumb {
     <div class="status-card">
         <div class="label">当前亮度</div>
         <div class="value" id="curBrightness">--</div>
-        <div class="sub">/ 4095 最大</div>
+        <div class="sub">/ <span id="maxBrightness">--</span> 最大</div>
     </div>
     <div class="status-card">
         <div class="label">目标亮度</div>
@@ -317,7 +317,7 @@ input[type=range]::-webkit-slider-thumb {
             <div class="desc">被压低后拉回的亮度值</div>
         </div>
         <div class="slider-wrap">
-            <input type="range" id="targetSlider" min="1000" max="4095" step="1" value="4095" oninput="onTargetChange(this.value)">
+            <input type="range" id="targetSlider" min="100" max="4095" step="1" value="100" oninput="onTargetChange(this.value)">
             <span class="slider-value" id="targetValue">4095</span>
         </div>
     </div>
@@ -379,7 +379,17 @@ function ksuExec(command) {
 // 模块目录（KSU 挂载点）
 const MODDIR = '/data/adb/modules/brightness_lock';
 const CONFIG = MODDIR + '/config';
-const BRIGHTNESS = '/sys/class/backlight/panel0-backlight/brightness';
+// 亮度节点路径/最大值：守护进程启动时写入（跨机型自动探测）
+// WebUI 每次操作前动态读取，不写死机型路径
+async function getBrightnessPath() {
+    const { stdout } = await ksuExec(`cat ${MODDIR}/brightness_path 2>/dev/null || echo /sys/class/backlight/panel0-backlight/brightness`);
+    return (stdout.trim() || '/sys/class/backlight/panel0-backlight/brightness');
+}
+async function getBrightnessMax() {
+    const { stdout } = await ksuExec(`cat ${MODDIR}/brightness_max 2>/dev/null || echo 4095`);
+    const n = parseInt(stdout.trim());
+    return isNaN(n) ? 4095 : n;
+}
 
 // DOM 引用
 const $ = (id) => document.getElementById(id);
@@ -421,14 +431,18 @@ async function writeConfig(key, value) {
 
 // ---------- 刷新所有状态 ----------
 async function refreshAll() {
+    // 动态读取亮度节点路径 + 最大值（跨机型）
+    const BR = await getBrightnessPath();
+    const MAX = await getBrightnessMax();
+
     // 读取配置
     const cfg = await readConfig();
     let enabled = cfg.enabled === '1';
-    let target = safeNum(cfg.target, 4095);
+    let target = safeNum(cfg.target, MAX);
     let interval = safeNum(cfg.interval, 1);
 
     // 读取当前亮度
-    const cur = await ksuExec(`cat ${BRIGHTNESS} 2>/dev/null`);
+    const cur = await ksuExec(`cat ${BR} 2>/dev/null`);
     const curVal = safeNum(cur.stdout.trim(), 0);
     $('curBrightness').textContent = cur.stdout.trim() || '--';
 
@@ -443,13 +457,16 @@ async function refreshAll() {
         interval = safeNum(cfg2.interval, 1);
     }
 
-    // 更新 UI
+    // 更新 UI（滑块范围跟随机型最大值）
     $('masterSwitch').className = enabled ? 'switch on' : 'switch';
     $('masterCard').className = enabled ? 'master-card active' : 'master-card';
     $('targetDisplay').textContent = target;
     $('targetBrightness').textContent = target;
+    $('targetSlider').min = 100;
+    $('targetSlider').max = MAX;
     $('targetSlider').value = target;
     $('targetValue').textContent = target;
+    $('maxBrightness').textContent = MAX;
 
     document.querySelectorAll('.chip').forEach(c => {
         c.classList.toggle('active', parseInt(c.dataset.interval) === interval);
@@ -471,8 +488,9 @@ window.toggleLock = async function() {
 
     // 开启时立即生效（把亮度拉满）
     if (newVal === '1') {
+        const BR = await getBrightnessPath();
         const target = safeNum(cfg.target, 4095);
-        await ksuExec(`echo ${target} > ${BRIGHTNESS}`);
+        await ksuExec(`echo ${target} > ${BR}`);
     }
     refreshAll();
 };
@@ -489,7 +507,8 @@ window.onTargetChange = function(value) {
         await writeConfig('target_set', '1');
         const cfg = await readConfig();
         if (cfg.enabled === '1') {
-            await ksuExec(`echo ${value} > ${BRIGHTNESS}`);
+            const BR = await getBrightnessPath();
+            await ksuExec(`echo ${value} > ${BR}`);
         }
         refreshAll();
     }, 500);

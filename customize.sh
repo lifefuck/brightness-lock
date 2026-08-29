@@ -103,6 +103,13 @@ ui_print "    或改用持久 Root（KSU/Magisk/APatch）"
 ui_print "  - 卸载干净：删除模块即完全移除，"
 ui_print "    守护进程自动退出，无残留"
 ui_print ""
+ui_print "  📱 机型测试声明："
+ui_print "  - 本模块仅在 小米 14 Pro 上实测通过"
+ui_print "  - 同型号屏幕应可使用"
+ui_print "  - 其他机型请自行测试"
+ui_print "    （守护自动探测亮度节点，通用性较好，"
+ui_print "     但不保证所有厂商内核都兼容）"
+ui_print ""
 
 case "$MANAGER" in
     ksu)

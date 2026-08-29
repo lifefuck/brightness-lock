@@ -127,26 +127,41 @@ check_single_instance() {
 
 # ---------- 找到亮度节点 ----------
 BRIGHTNESS=""
+MAX_BRIGHTNESS=4095
 find_brightness() {
     # 标准路径（小米14Pro实测）
     if [ -f "/sys/class/backlight/panel0-backlight/brightness" ]; then
         BRIGHTNESS="/sys/class/backlight/panel0-backlight/brightness"
-        return
+    else
+        # 遍历所有 backlight 设备（通用机型）
+        for dev in /sys/class/backlight/*/; do
+            if [ -f "$dev/brightness" ]; then
+                BRIGHTNESS="${dev}brightness"
+                break
+            fi
+        done
     fi
-    # 遍历所有 backlight 设备
-    for dev in /sys/class/backlight/*/; do
-        if [ -f "$dev/brightness" ]; then
-            BRIGHTNESS="${dev}brightness"
-            return
-        fi
-    done
+    # 读取该节点的最大亮度（WebUI 滑块上限用）
+    if [ -n "$BRIGHTNESS" ]; then
+        MAX_BRIGHTNESS=$(cat "${BRIGHTNESS%/brightness}/max_brightness" 2>/dev/null | tr -d ' \r')
+        case "$MAX_BRIGHTNESS" in
+            ''|*[!0-9]*) MAX_BRIGHTNESS=4095 ;;
+        esac
+    fi
+    # 把节点路径+最大值写入状态文件，供 WebUI 动态读取（跨机型兼容）
+    if [ -n "$BRIGHTNESS" ]; then
+        echo "$BRIGHTNESS" > "$MODDIR/brightness_path" 2>/dev/null
+        echo "$MAX_BRIGHTNESS" > "$MODDIR/brightness_max" 2>/dev/null
+        chmod 644 "$MODDIR/brightness_path" "$MODDIR/brightness_max" 2>/dev/null
+    fi
 }
 
 # ---------- 检查屏幕是否亮着 ----------
 is_screen_on() {
     # bl_power=0 表示亮；没有 bl_power 就默认亮
-    local BP="/sys/class/backlight/panel0-backlight/bl_power"
-    if [ -f "$BP" ]; then
+    # 动态获取：与 BRIGHTNESS 同目录的 bl_power（跨机型兼容）
+    local BP="${BRIGHTNESS%/brightness}/bl_power"
+    if [ -n "$BRIGHTNESS" ] && [ -f "$BP" ]; then
         [ "$(cat "$BP" 2>/dev/null)" = "0" ]
         return $?
     fi
