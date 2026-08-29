@@ -288,7 +288,7 @@ input[type=range]::-webkit-slider-thumb {
 <div class="master-card" id="masterCard">
     <div class="master-info">
         <h2>锁定亮度</h2>
-        <p>屏幕亮度被系统压低时自动拉回 <b id="targetDisplay">4095</b></p>
+        <p>默认关闭 · 开启后屏幕亮度被压低时自动拉回 <b id="targetDisplay">4095</b></p>
     </div>
     <div class="switch" id="masterSwitch" onclick="toggleLock()"></div>
 </div>
@@ -346,8 +346,8 @@ input[type=range]::-webkit-slider-thumb {
 </div>
 
 <div class="footer-note">
-    亮度锁定器 v1.0 · KSU 模块<br>
-    守护进程每 N 秒检测一次亮度，发现被压低立即拉回
+    亮度锁定器 v1.2 · KSU 模块<br>
+    默认关闭，需要时在 WebUI 开启锁定
 </div>
 
 <script type="module">
@@ -392,7 +392,7 @@ function safeNum(v, def) {
 
 // ---------- 读取配置 ----------
 async function readConfig() {
-    const { stdout } = await ksuExec(`cat ${CONFIG} 2>/dev/null || echo "enabled=1 target=4095 interval=2"`);
+    const { stdout } = await ksuExec(`cat ${CONFIG} 2>/dev/null || echo "enabled=0 target=4095 interval=2"`);
     const cfg = {};
     stdout.split('\n').forEach(line => {
         const m = line.match(/^(\w+)=(.+)$/);
@@ -423,9 +423,25 @@ async function writeConfig(key, value) {
 async function refreshAll() {
     // 读取配置
     const cfg = await readConfig();
-    const enabled = cfg.enabled === '1';
-    const target = safeNum(cfg.target, 4095);
-    const interval = safeNum(cfg.interval, 2);
+    let enabled = cfg.enabled === '1';
+    let target = safeNum(cfg.target, 4095);
+    let interval = safeNum(cfg.interval, 2);
+
+    // 读取当前亮度
+    const cur = await ksuExec(`cat ${BRIGHTNESS} 2>/dev/null`);
+    const curVal = safeNum(cur.stdout.trim(), 0);
+    $('curBrightness').textContent = cur.stdout.trim() || '--';
+
+    // 首次使用（target_set=0）：目标亮度自动跟随系统当前亮度
+    if (cfg.target_set === '0' && curVal > 0) {
+        target = curVal;
+        await writeConfig('target', target);
+        await writeConfig('target_set', '1');
+        // 重新读取配置（写入后）
+        const cfg2 = await readConfig();
+        enabled = cfg2.enabled === '1';
+        interval = safeNum(cfg2.interval, 2);
+    }
 
     // 更新 UI
     $('masterSwitch').className = enabled ? 'switch on' : 'switch';
@@ -438,10 +454,6 @@ async function refreshAll() {
     document.querySelectorAll('.chip').forEach(c => {
         c.classList.toggle('active', parseInt(c.dataset.interval) === interval);
     });
-
-    // 读取当前亮度
-    const cur = await ksuExec(`cat ${BRIGHTNESS} 2>/dev/null`);
-    $('curBrightness').textContent = cur.stdout.trim() || '--';
 
     // 守护进程状态（pgrep -f 匹配完整命令行，不受进程名截断影响）
     const ps = await ksuExec(`pgrep -f "brightness_lock/daemon.sh" | head -1`);
@@ -473,6 +485,8 @@ window.onTargetChange = function(value) {
     // 防抖：松手后 500ms 写入
     targetTimer = setTimeout(async () => {
         await writeConfig('target', value);
+        // 用户手动设置后标记 target_set=1，防止下次打开被重置
+        await writeConfig('target_set', '1');
         const cfg = await readConfig();
         if (cfg.enabled === '1') {
             await ksuExec(`echo ${value} > ${BRIGHTNESS}`);

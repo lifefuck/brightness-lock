@@ -59,11 +59,17 @@ safe_int() {
 
 # ---------- 读取配置（带默认值 + 严格校验） ----------
 read_config() {
-    # 配置不存在时创建默认配置
+    # 配置不存在时创建默认配置（默认关闭，目标亮度=系统当前亮度）
     if [ ! -f "$CONFIG" ]; then
-        echo "enabled=1" > "$CONFIG"
-        echo "target=4095" >> "$CONFIG"
+        echo "enabled=0" > "$CONFIG"
+        # 首次安装：目标亮度跟随系统当前亮度（而非写死4095）
+        CUR_NOW=$(cat "$BRIGHTNESS" 2>/dev/null | tr -d ' \r')
+        case "$CUR_NOW" in
+            ''|*[!0-9]*) CUR_NOW=4095 ;;  # 读不到就用最大
+        esac
+        echo "target=$CUR_NOW" >> "$CONFIG"
         echo "interval=2" >> "$CONFIG"
+        echo "target_set=0" >> "$CONFIG"
         chmod 644 "$CONFIG"
     fi
 
@@ -73,9 +79,25 @@ read_config() {
     INTERVAL=$(grep -E "^interval=" "$CONFIG" 2>/dev/null | cut -d= -f2 | tr -d ' \r')
 
     # 默认值兜底（严格数字校验，杜绝非法值）
-    [ -z "$ENABLED" ] && ENABLED=1
-    TARGET=$(safe_int "$TARGET" 4095)
+    [ -z "$ENABLED" ] && ENABLED=0
+    TARGET=$(safe_int "$TARGET" "")
     INTERVAL=$(safe_int "$INTERVAL" 2)
+
+    # target 为空且未设置过（target_set=0）→ 自动填充为系统当前亮度
+    TARGET_SET=$(grep -E "^target_set=" "$CONFIG" 2>/dev/null | cut -d= -f2 | tr -d ' \r')
+    if [ -z "$TARGET" ] || [ "$TARGET_SET" = "0" ]; then
+        CUR_NOW=$(cat "$BRIGHTNESS" 2>/dev/null | tr -d ' \r')
+        case "$CUR_NOW" in
+            ''|*[!0-9]*) CUR_NOW=4095 ;;
+        esac
+        TARGET=$(safe_int "$CUR_NOW" 4095)
+        # 先删除旧的 target/target_set 行（防重复），再写入
+        grep -vE "^(target|target_set)=" "$CONFIG" > "$CONFIG.tmp" 2>/dev/null
+        echo "target=$TARGET" >> "$CONFIG.tmp"
+        echo "target_set=1" >> "$CONFIG.tmp"
+        mv "$CONFIG.tmp" "$CONFIG" 2>/dev/null
+        chmod 644 "$CONFIG"
+    fi
 
     # 边界限制：interval 至少 1 秒，最多 60 秒
     if [ "$INTERVAL" -lt 1 ] 2>/dev/null; then

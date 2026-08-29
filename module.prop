@@ -1,7 +1,7 @@
 id=brightness_lock
 name=亮度锁定器
-version=v1.1
-versionCode=2
-author=宝宝の助手
-description=解决温控降亮度问题：常驻守护屏幕亮度，被系统压低时自动拉回4095。带 KSU WebUI 开关控制。
+version=v1.3
+versionCode=4
+author=life
+description=解决温控降亮度：常驻守护屏幕亮度，被压低时拉回目标值。默认关闭，KSU WebUI 开关控制。
 webui=true

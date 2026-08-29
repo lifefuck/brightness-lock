@@ -1,7 +1,7 @@
 # 亮度锁定器配置文件
-# enabled=1 表示锁定开启（默认开）
-# target=4095 目标亮度（小米14Pro最大值4095）
+# enabled=0 表示锁定关闭（默认关闭，需要时在 WebUI 手动开启）
+# target 首次启动时自动填充为系统当前亮度（用户可在 WebUI 调整）
 # interval=2 检查间隔（秒），越短对抗温控越激进
-enabled=1
-target=4095
+enabled=0
 interval=2
+target_set=0
