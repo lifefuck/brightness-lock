@@ -321,7 +321,10 @@ input[type=range]::-webkit-slider-thumb {
         </div>
     </div>
     <div class="header-actions">
-        <a class="gh-link" href="https://github.com/lifefuck/brightness-lock" target="_blank" rel="noopener">⭐ GitHub</a>
+        <!-- GitHub 跳转：KSU WebView 无 shouldOverrideUrlLoading，
+             用 a 标签会在 WebUI 内部加载外部网页（体验差），
+             必须用 am start 调起系统浏览器 -->
+        <a class="gh-link" href="#" onclick="openGitHub();return false;">⭐ GitHub</a>
         <button class="lang-btn" id="langBtn" onclick="toggleLang()">EN</button>
     </div>
     <div class="daemon-badge" id="daemonBadge" data-i18n="daemonChecking">检测中…</div>
@@ -392,7 +395,7 @@ input[type=range]::-webkit-slider-thumb {
     <span data-i18n="footer1">亮度锁定器 v1.0 · 兼容 KSU/APatch/Magisk/狐狸面具</span><br>
     <span data-i18n="footer2">默认关闭，需要时在 WebUI 开启锁定</span><br>
     <span data-i18n="footer3">作者：lite · 开源：</span>
-    <a class="gh-footer" href="https://github.com/lifefuck/brightness-lock" target="_blank" rel="noopener" data-i18n="footerGh">GitHub 仓库</a>
+    <a class="gh-footer" href="#" onclick="openGitHub();return false;" data-i18n="footerGh">GitHub 仓库</a>
 </div>
 
 <script type="module">
@@ -488,6 +491,13 @@ window.toggleLang = function() {
     currentLang = currentLang === 'zh' ? 'en' : 'zh';
     try { localStorage.setItem('brightness_lock_lang', currentLang); } catch (e) {}
     applyLang();
+};
+
+// 打开 GitHub 仓库（挂到 window 供 onclick 调用）
+// KSU WebView 不支持外部链接跳转（无 shouldOverrideUrlLoading），
+// 用 root 执行 am start 调起系统浏览器打开
+window.openGitHub = async function() {
+    await ksuExec(`am start -a android.intent.action.VIEW -d "https://github.com/lifefuck/brightness-lock"`);
 };
 
 // exec 封装：调用 WebView 注入的全局 ksu 对象
