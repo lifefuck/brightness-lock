@@ -262,6 +262,45 @@ input[type=range]::-webkit-slider-thumb {
     line-height: 1.8;
 }
 
+/* ============ 顶部按钮（语言切换 + GitHub） ============ */
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-right: 10px;
+}
+.lang-btn {
+    background: #1C1F2A;
+    border: 1px solid #2A2E3D;
+    color: var(--text);
+    font-size: 12px;
+    font-weight: 600;
+    padding: 5px 10px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all .2s;
+}
+.lang-btn:active { transform: scale(0.95); }
+.gh-link {
+    display: inline-flex;
+    align-items: center;
+    background: #1C1F2A;
+    border: 1px solid #2A2E3D;
+    color: var(--accent);
+    font-size: 12px;
+    font-weight: 600;
+    padding: 5px 10px;
+    border-radius: 8px;
+    text-decoration: none;
+    transition: all .2s;
+}
+.gh-link:active { transform: scale(0.95); }
+.gh-footer {
+    color: var(--accent);
+    text-decoration: none;
+    font-weight: 600;
+}
+
 /* 动画 */
 @keyframes pulse {
     0%, 100% { opacity: 1; }
@@ -277,18 +316,22 @@ input[type=range]::-webkit-slider-thumb {
     <div class="header-left">
         <div class="logo">☀️</div>
         <div class="title-block">
-            <h1>亮度锁定器</h1>
-            <p>温控降亮度 · 终极对抗</p>
+            <h1 data-i18n="title">亮度锁定器</h1>
+            <p data-i18n="subtitle">温控降亮度 · 终极对抗</p>
         </div>
     </div>
-    <div class="daemon-badge" id="daemonBadge">检测中…</div>
+    <div class="header-actions">
+        <a class="gh-link" href="https://github.com/lifefuck/brightness-lock" target="_blank" rel="noopener">⭐ GitHub</a>
+        <button class="lang-btn" id="langBtn" onclick="toggleLang()">EN</button>
+    </div>
+    <div class="daemon-badge" id="daemonBadge" data-i18n="daemonChecking">检测中…</div>
 </div>
 
 <!-- ===== 主开关 ===== -->
 <div class="master-card" id="masterCard">
     <div class="master-info">
-        <h2>锁定亮度</h2>
-        <p>默认关闭 · 开启后屏幕亮度被压低时自动拉回 <b id="targetDisplay">--</b></p>
+        <h2 data-i18n="lockTitle">锁定亮度</h2>
+        <p><span data-i18n="lockDesc">默认关闭 · 开启后屏幕亮度被压低时自动拉回</span> <b id="targetDisplay">--</b></p>
     </div>
     <div class="switch" id="masterSwitch" onclick="toggleLock()"></div>
 </div>
@@ -296,25 +339,25 @@ input[type=range]::-webkit-slider-thumb {
 <!-- ===== 状态 ===== -->
 <div class="status-grid">
     <div class="status-card">
-        <div class="label">当前亮度</div>
+        <div class="label" data-i18n="curBrightness">当前亮度</div>
         <div class="value" id="curBrightness">--</div>
-        <div class="sub">/ <span id="maxBrightness">--</span> 最大</div>
+        <div class="sub">/ <span id="maxBrightness">--</span> <span data-i18n="maxSuffix">最大</span></div>
     </div>
     <div class="status-card">
-        <div class="label">目标亮度</div>
+        <div class="label" data-i18n="targetBrightness">目标亮度</div>
         <div class="value small" id="targetBrightness">--</div>
-        <div class="sub">守护拉回的目标值</div>
+        <div class="sub" data-i18n="targetSub">守护拉回的目标值</div>
     </div>
 </div>
 
 <!-- ===== 设置 ===== -->
 <div class="settings-card">
-    <h3>⚙️ 设置</h3>
+    <h3 data-i18n="settings">⚙️ 设置</h3>
 
     <div class="setting-row">
         <div class="setting-label">
-            目标亮度
-            <div class="desc">被压低后拉回的亮度值</div>
+            <span data-i18n="targetLabel">目标亮度</span>
+            <div class="desc" data-i18n="targetDesc">被压低后拉回的亮度值</div>
         </div>
         <div class="slider-wrap">
             <input type="range" id="targetSlider" min="100" max="4095" step="1" value="100" oninput="onTargetChange(this.value)">
@@ -324,8 +367,8 @@ input[type=range]::-webkit-slider-thumb {
 
     <div class="setting-row">
         <div class="setting-label">
-            检查间隔
-            <div class="desc">守护进程检测频率（越短越激进）</div>
+            <span data-i18n="intervalLabel">检查间隔</span>
+            <div class="desc" data-i18n="intervalDesc">守护进程检测频率（越短越激进）</div>
         </div>
         <div class="interval-group">
             <div class="chip active" data-interval="1" onclick="setInterval_(1)">1s</div>
@@ -339,25 +382,113 @@ input[type=range]::-webkit-slider-thumb {
 <!-- ===== 日志 ===== -->
 <div class="log-card">
     <h3>
-        📋 守护日志
-        <button onclick="refreshLog()">🔄 刷新</button>
+        <span data-i18n="logTitle">📋 守护日志</span>
+        <button onclick="refreshLog()" data-i18n="refresh">🔄 刷新</button>
     </h3>
-    <div class="log-content" id="logContent">加载中…</div>
+    <div class="log-content" id="logContent" data-i18n="logLoading">加载中…</div>
 </div>
 
 <div class="footer-note">
-    亮度锁定器 v1.0 · 兼容 KSU/APatch/Magisk/狐狸面具<br>
-    默认关闭，需要时在 WebUI 开启锁定
+    <span data-i18n="footer1">亮度锁定器 v1.0 · 兼容 KSU/APatch/Magisk/狐狸面具</span><br>
+    <span data-i18n="footer2">默认关闭，需要时在 WebUI 开启锁定</span><br>
+    <span data-i18n="footer3">作者：lite · 开源：</span>
+    <a class="gh-footer" href="https://github.com/lifefuck/brightness-lock" target="_blank" rel="noopener" data-i18n="footerGh">GitHub 仓库</a>
 </div>
 
 <script type="module">
 // ============================================================
 // KSU WebUI JavaScript —— 通过 ksu.exec 执行 root 命令
-// v1.1 修复：
-//   - module 作用域函数挂到 window（否则 HTML onclick 找不到）
-//   - 守护进程检测改用 pgrep -f（ps -A 进程名会截断）
-//   - 配置写入值做数字校验，杜绝注入
+// v1.2 新增：
+//   - 中英双语切换（默认中文，localStorage 记忆，KSU WebView
+//     不会按系统语言自动切换，需手动实现 i18n）
+//   - GitHub 仓库跳转按钮 + 页脚署名 lite
 // ============================================================
+
+// ---------- 国际化字典（中/英） ----------
+const I18N = {
+    zh: {
+        title: '亮度锁定器',
+        subtitle: '温控降亮度 · 终极对抗',
+        daemonChecking: '检测中…',
+        lockTitle: '锁定亮度',
+        lockDesc: '默认关闭 · 开启后屏幕亮度被压低时自动拉回',
+        curBrightness: '当前亮度',
+        maxSuffix: '最大',
+        targetBrightness: '目标亮度',
+        targetSub: '守护拉回的目标值',
+        settings: '⚙️ 设置',
+        targetLabel: '目标亮度',
+        targetDesc: '被压低后拉回的亮度值',
+        intervalLabel: '检查间隔',
+        intervalDesc: '守护进程检测频率（越短越激进）',
+        logTitle: '📋 守护日志',
+        refresh: '🔄 刷新',
+        logLoading: '加载中…',
+        noLog: '（暂无日志）',
+        daemonRunning: '守护运行中',
+        daemonStopped: '守护未运行',
+        footer1: '亮度锁定器 v1.0 · 兼容 KSU/APatch/Magisk/狐狸面具',
+        footer2: '默认关闭，需要时在 WebUI 开启锁定',
+        footer3: '作者：lite · 开源：',
+        footerGh: 'GitHub 仓库',
+    },
+    en: {
+        title: 'Brightness Lock',
+        subtitle: 'Anti-Thermal Throttling',
+        daemonChecking: 'Checking…',
+        lockTitle: 'Lock Brightness',
+        lockDesc: 'Off by default · auto-restore when dimmed',
+        curBrightness: 'Current',
+        maxSuffix: 'max',
+        targetBrightness: 'Target',
+        targetSub: 'Brightness to restore',
+        settings: '⚙️ Settings',
+        targetLabel: 'Target Brightness',
+        targetDesc: 'Brightness to restore when dimmed',
+        intervalLabel: 'Check Interval',
+        intervalDesc: 'Daemon check frequency (shorter = more aggressive)',
+        logTitle: '📋 Daemon Log',
+        refresh: '🔄 Refresh',
+        logLoading: 'Loading…',
+        noLog: '(No logs yet)',
+        daemonRunning: 'Daemon Running',
+        daemonStopped: 'Daemon Stopped',
+        footer1: 'Brightness Lock v1.0 · KSU/APatch/Magisk/Kitsune',
+        footer2: 'Off by default · enable from WebUI when needed',
+        footer3: 'Author: lite · Source:',
+        footerGh: 'GitHub Repo',
+    }
+};
+
+// 当前语言（默认中文；localStorage 记忆用户选择）
+let currentLang = 'zh';
+try {
+    const saved = localStorage.getItem('brightness_lock_lang');
+    if (saved === 'zh' || saved === 'en') currentLang = saved;
+} catch (e) { /* WebView 可能禁用 localStorage，忽略 */ }
+
+// 应用语言：更新所有 data-i18n 元素 + 守护徽章
+function applyLang() {
+    const dict = I18N[currentLang] || I18N.zh;
+    document.querySelectorAll('[data-i18n]').forEach(el => {
+        const key = el.dataset.i18n;
+        if (dict[key]) el.textContent = dict[key];
+    });
+    // 切换按钮显示另一种语言（中文界面显示 EN，英文界面显示 中）
+    $('langBtn').textContent = currentLang === 'zh' ? 'EN' : '中';
+    // 守护徽章若已确定状态，重设文本
+    if (window._daemonRunning !== undefined) {
+        $('daemonBadge').textContent = window._daemonRunning
+            ? dict.daemonRunning : dict.daemonStopped;
+    }
+}
+
+// 切换语言（挂到 window 供 onclick 调用）
+window.toggleLang = function() {
+    currentLang = currentLang === 'zh' ? 'en' : 'zh';
+    try { localStorage.setItem('brightness_lock_lang', currentLang); } catch (e) {}
+    applyLang();
+};
 
 // exec 封装：调用 WebView 注入的全局 ksu 对象
 function ksuExec(command) {
@@ -475,8 +606,10 @@ async function refreshAll() {
     // 守护进程状态（pgrep -f 匹配完整命令行，不受进程名截断影响）
     const ps = await ksuExec(`pgrep -f "brightness_lock/daemon.sh" | head -1`);
     const running = ps.stdout.trim().length > 0;
+    window._daemonRunning = running;
+    const dict = I18N[currentLang] || I18N.zh;
     const badge = $('daemonBadge');
-    badge.textContent = running ? '守护运行中' : '守护未运行';
+    badge.textContent = running ? dict.daemonRunning : dict.daemonStopped;
     badge.className = 'daemon-badge' + (running ? '' : ' off');
 }
 
@@ -525,12 +658,14 @@ window.setInterval_ = async function(sec) {
 // ---------- 日志 ----------
 window.refreshLog = async function() {
     const { stdout } = await ksuExec(`tail -20 ${MODDIR}/daemon.log 2>/dev/null`);
-    $('logContent').textContent = stdout || '（暂无日志）';
+    const dict = I18N[currentLang] || I18N.zh;
+    $('logContent').textContent = stdout || dict.noLog;
     $('logContent').scrollTop = $('logContent').scrollHeight;
 };
 
 // ---------- 初始化 ----------
 window.addEventListener('load', async () => {
+    applyLang();
     await refreshAll();
     await refreshLog();
     // 每 3 秒自动刷新状态

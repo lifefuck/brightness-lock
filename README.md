@@ -161,10 +161,10 @@ A: 守护逻辑通用（自动探测 `/sys/class/backlight/*/brightness`），�
 
 ## 📄 License
 
-[MIT](LICENSE) © 酷安@星陨Lite
+[MIT](LICENSE) © lite
 
 ---
 
 <p align="center">
-  <sub>Made with ❤️ and 🤖 · 酷安@星陨Lite</sub>
+  <sub>Made with ❤️ and 🤖 · lite</sub>
 </p>
