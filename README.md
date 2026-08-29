@@ -5,6 +5,13 @@
 </p>
 
 <p align="center">
+  <a href="https://github.com/lifefuck/brightness-lock/releases/latest">
+    <img src="https://img.shields.io/github/v/release/lifefuck/brightness-lock?style=for-the-badge&label=最新版本&color=3482FF" alt="最新版本"/>
+    <img src="https://img.shields.io/github/downloads/lifefuck/brightness-lock/total?style=for-the-badge&label=下载量&color=34C759" alt="下载量"/>
+  </a>
+</p>
+
+<p align="center">
   <b>🌞 解决安卓温控降亮度问题 —— 屏幕亮度被系统悄悄压低？一键锁定！</b>
 </p>
 
@@ -63,7 +70,7 @@
 - 设备已解锁 bootloader
 
 ### 步骤
-1. 下载 `亮度锁定器_1.0.zip`
+1. **下载模块**：[⬇️ 亮度锁定器 v1.0](https://github.com/lifefuck/brightness-lock/releases/latest/download/brightness-lock-v1.0.zip)（或到 [Releases 页](https://github.com/lifefuck/brightness-lock/releases) 下载最新版）
 2. 打开面具管理器 → **模块** → **从本地安装** → 选择 zip
 3. 安装器会**自动检测面具环境**：
    - ✅ 兼容 → 继续

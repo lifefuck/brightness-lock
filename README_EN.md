@@ -5,7 +5,14 @@
 </p>
 
 <p align="center">
-  <b>🌞 Fix Android thermal brightness throttling — screen dimmed by the system? Lock it back!</b>
+  <a href="https://github.com/lifefuck/brightness-lock/releases/latest">
+    <img src="https://img.shields.io/github/v/release/lifefuck/brightness-lock?style=for-the-badge&label=Latest&color=3482FF" alt="Latest Release"/>
+    <img src="https://img.shields.io/github/downloads/lifefuck/brightness-lock/total?style=for-the-badge&label=Downloads&color=34C759" alt="Downloads"/>
+  </a>
+</p>
+
+<p align="center">
+  <b>🌞 Fix Android thermal brightness throttling — screen dimmed by the system? Lock it!</b>
 </p>
 
 <p align="center">
@@ -63,7 +70,7 @@ The daemon auto-detects the brightness node (`/sys/class/backlight/*/brightness`
 - Unlocked bootloader
 
 ### Steps
-1. Download `brightness_lock_1.0.zip`
+1. **Download**: [⬇️ Brightness Lock v1.0](https://github.com/lifefuck/brightness-lock/releases/latest/download/brightness-lock-v1.0.zip) (or check the [Releases page](https://github.com/lifefuck/brightness-lock/releases) for the latest)
 2. Open manager → **Modules** → **Install from storage** → select zip
 3. Installer **auto-detects your manager**:
    - ✅ Compatible → proceed
