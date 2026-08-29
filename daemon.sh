@@ -109,6 +109,11 @@ read_config() {
     if [ "$TARGET" -lt 100 ] 2>/dev/null; then
         TARGET=100
     fi
+    # target 不超过机型最大亮度（防止手动改超限值）
+    # MAX_BRIGHTNESS 由 find_brightness 探测，未探测时默认 4095
+    if [ -n "$MAX_BRIGHTNESS" ] && [ "$TARGET" -gt "$MAX_BRIGHTNESS" ] 2>/dev/null; then
+        TARGET="$MAX_BRIGHTNESS"
+    fi
 }
 
 # ---------- 单实例保护 ----------
@@ -180,7 +185,9 @@ main() {
         exit 1
     fi
 
-    log "亮度守护启动，节点=$BRIGHTNESS，目标=4095，间隔=1s"
+    # 先读一次配置，让首行日志记录真实的目标/间隔（而非写死值）
+    read_config
+    log "亮度守护启动，节点=$BRIGHTNESS，目标=$TARGET，间隔=${INTERVAL}s"
 
     while true; do
         # ========== 模块删除检测（KSU/Magisk 卸载自愈） ==========

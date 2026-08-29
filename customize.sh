@@ -61,16 +61,19 @@ detect_manager() {
 
 # ---------- 按键监听：音量上=确认(0)，音量下=取消(1)，超时=取消(1) ----------
 wait_for_key() {
-    local i=0
-    # 最多监听 15 秒
-    while [ "$i" -lt 15 ]; do
+    # 用真实时间戳计时（不能用循环次数！安装界面事件流活跃，
+    # getevent 几乎瞬间返回无关事件，循环会飞快跑完，
+    # 导致 15 秒实际只有四五秒）
+    local START=$(date +%s)
+    local NOW=$START
+    while [ $((NOW - START)) -lt 15 ]; do
         # 读取一个输入事件，匹配音量键（KEY_VOLUMEUP=115=0x73, KEY_VOLUMEDOWN=114=0x72）
         EVENT=$(timeout 1 getevent -c 1 2>/dev/null | grep -E "VOLUME(UP|DOWN)|0073|0072" | head -1)
         case "$EVENT" in
             *VOLUMEUP*|*"0073"*) return 0 ;;   # 音量上 → 确认
             *VOLUMEDOWN*|*"0072"*) return 1 ;; # 音量下 → 取消
         esac
-        i=$((i + 1))
+        NOW=$(date +%s)
     done
     return 1  # 超时默认取消（安全优先）
 }
