@@ -50,11 +50,7 @@ Under bright sunlight, Android's thermal management / auto-brightness often **si
 
 ## 📱 Device Test Status
 
-| Status | Description |
-|--------|-------------|
-| ✅ Tested | **Xiaomi 14 Pro** (KSU root) |
-| 🟡 Likely works | Devices with same panel |
-| ⚠️ Untested | Other devices — **test at your own discretion** |
+> ⚠️ This module is **only tested on Xiaomi 14 Pro**. It is **NOT guaranteed to work on other devices** — test at your own discretion.
 
 The daemon auto-detects the brightness node (`/sys/class/backlight/*/brightness`) and is quite generic, but **kernel/SELinux differences between vendors may break compatibility**. Feel free to open an [Issue](https://github.com/lifefuck/brightness-lock/issues).
 
