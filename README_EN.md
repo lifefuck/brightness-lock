@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://img.shields.io/badge/Brightness%20Lock-1.0-3482FF?style=for-the-badge&logo=android&logoColor=white" alt="Version"/>
+  <img src="https://img.shields.io/badge/Brightness%20Lock-1.1-3482FF?style=for-the-badge&logo=android&logoColor=white" alt="Version"/>
   <img src="https://img.shields.io/badge/License-MIT-34C759?style=for-the-badge" alt="License"/>
   <img src="https://img.shields.io/badge/Platform-KSU%20%7C%20APatch%20%7C%20Magisk%20%7C%20Kitsune-F7931E?style=for-the-badge" alt="Platform"/>
 </p>
