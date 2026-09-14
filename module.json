@@ -4,8 +4,12 @@
     "sourceUrl": "https://github.com/lifefuck/brightness-lock",
     "additionalAuthors": [
         {
+            "type": "remove",
+            "name": "lifefuck"
+        },
+        {
             "type": "add",
-            "name": "life",
+            "name": "life fuck",
             "link": "https://github.com/lifefuck"
         }
     ]
