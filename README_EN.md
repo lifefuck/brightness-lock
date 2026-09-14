@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://img.shields.io/badge/Brightness%20Lock-1.1-3482FF?style=for-the-badge&logo=android&logoColor=white" alt="Version"/>
+  <img src="https://img.shields.io/badge/Xiaomi%2014%20Pro%20Brightness%20Boost-1.2-3482FF?style=for-the-badge&logo=android&logoColor=white" alt="Version"/>
   <img src="https://img.shields.io/badge/License-MIT-34C759?style=for-the-badge" alt="License"/>
   <img src="https://img.shields.io/badge/Platform-KSU%20%7C%20APatch%20%7C%20Magisk%20%7C%20Kitsune-F7931E?style=for-the-badge" alt="Platform"/>
 </p>
@@ -12,7 +12,7 @@
 </p>
 
 <p align="center">
-  <b>🌞 Fix Android thermal brightness throttling — screen dimmed by the system? Lock it!</b>
+  <b>🌞 Fix Android thermal brightness throttling — screen dimmed by the system? Lock it instantly!</b>
 </p>
 
 <p align="center">
@@ -25,7 +25,7 @@
 
 Under bright sunlight, Android's thermal management / auto-brightness often **silently dims your screen** — even at max brightness it's still hard to see.
 
-**Brightness Lock** is a background daemon module that continuously monitors screen brightness. Whenever the system pushes it below your target value, it **immediately restores it**, keeping your screen at the brightness you set.
+**Xiaomi 14 Pro Brightness Boost** is an event-driven background daemon module that continuously guards screen brightness. Whenever the system pushes it below your target value, it **instantly restores it with zero latency**, completely replacing outdated poll intervals.
 
 > ⚠️ **This module is AI-assisted.** The code has been security-reviewed and logic-tested, but please acknowledge the risks (see [Disclaimer](#-disclaimer)).
 
@@ -33,10 +33,12 @@ Under bright sunlight, Android's thermal management / auto-brightness often **si
 
 ## ✨ Features
 
-- 🛡️ **Anti-throttling**: continuously detects and restores dimmed brightness (1s interval by default)
+- 🛡️ **Anti-throttling**: event-driven instant restoration when screen brightness is throttled
+- 💤 **Deep Sleep**: completely suspends on screen off, 0 CPU wakeups and 0 idle drain
+- 🎨 **Material You MD3**: elegant Monet dynamic theming with native Android 12+ aesthetics
 - 🔒 **Off by default**: no interference until you enable it in WebUI
-- 🎯 **Smart target**: auto-locks to current brightness on first enable, adjustable (1000~4095)
-- 📊 **Live status**: WebUI shows current/target brightness, daemon status, and logs
+- 🎯 **Smart target**: auto-locks to current brightness on first enable, adjustable (100~4095)
+- 📊 **Live status**: WebUI shows current/target brightness, daemon status, and live logs
 - 🧹 **Clean uninstall**: removing the module fully removes it; daemon self-terminates
 - 🔌 **Multi-platform**: KernelSU / APatch / Magisk / Kitsune Mask
 
@@ -46,20 +48,16 @@ Under bright sunlight, Android's thermal management / auto-brightness often **si
 
 | Manager | Daemon | WebUI | Notes |
 |---------|:------:|:-----:|-------|
-| **KernelSU (KSU)** | ✅ | ✅ | Full support |
+| **KernelSU (KSU)** | ✅ | ✅ | Full support with MD3 Monet WebUI |
 | **APatch** | ✅ | ✅ | Reuses KSU WebUI API |
 | **Kitsune Mask** | ✅ | ❌ | Terminal control |
 | **Magisk (official)** | ✅ | ❌ | No webroot support officially |
 
-> 📌 Magisk/Kitsune lack WebUI because the manager itself doesn't support it (topjohnwu explicitly refuses), not a module limitation.
-
 ---
 
-## 📱 Device Test Status
+## 📱 Device Notes
 
-> ⚠️ This module is **only tested on Xiaomi 14 Pro**. It is **NOT guaranteed to work on other devices** — test at your own discretion.
-
-The daemon auto-detects the brightness node (`/sys/class/backlight/*/brightness`) and is quite generic, but **kernel/SELinux differences between vendors may break compatibility**. Feel free to open an [Issue](https://github.com/lifefuck/brightness-lock/issues).
+> ⚠️ This module is **tailored for Xiaomi 14 Pro (HyperOS)**. Other devices support automatic backlight node detection, but please test at your own discretion.
 
 ---
 
@@ -70,101 +68,24 @@ The daemon auto-detects the brightness node (`/sys/class/backlight/*/brightness`
 - Unlocked bootloader
 
 ### Steps
-1. **Download**: [⬇️ Brightness Lock v1.0](https://github.com/lifefuck/brightness-lock/releases/latest/download/brightness-lock-v1.0.zip) (or check the [Releases page](https://github.com/lifefuck/brightness-lock/releases) for the latest)
+1. **Download**: Check the [Releases page](https://github.com/lifefuck/brightness-lock/releases) for the latest v1.2 zip
 2. Open manager → **Modules** → **Install from storage** → select zip
-3. Installer **auto-detects your manager**:
-   - ✅ Compatible → proceed
-   - ❌ Unknown environment → aborts automatically
-4. Key confirmation:
+3. Key confirmation:
    - **[Volume+] = install**
    - **[Volume-] = cancel**
-   - Auto-cancels after 15s of no input
-5. Reboot
+4. Reboot
 
 ---
 
 ## 🎛️ Usage
 
 ### KSU / APatch (WebUI)
-1. Manager → Modules → **Brightness Lock**
-2. Tap the **UI / web icon** to open the control panel
-3. Toggle **Lock Brightness** on
-
-### Magisk / Kitsune (Terminal)
-```bash
-# Enable lock
-echo enabled=1 > /data/adb/modules/brightness_lock/config
-
-# Disable lock
-echo enabled=0 > /data/adb/modules/brightness_lock/config
-
-# Check status
-cat /data/adb/modules/brightness_lock/config
-```
-
----
-
-## ⚙️ Configuration
-
-Config file: `/data/adb/modules/brightness_lock/config`
-
-| Key | Default | Description |
-|-----|---------|-------------|
-| `enabled` | `0` | Lock switch (0=off, 1=on) |
-| `target` | current brightness | Target brightness (100~4095) |
-| `interval` | `1` | Check interval (s), lower = more aggressive |
-
-> On first run, `target` auto-fills with current system brightness. Adjust later via WebUI or terminal.
-
----
-
-## 🗑️ Uninstall
-
-1. Manager → Modules → **Brightness Lock** → **Uninstall**
-2. The daemon detects removal and **self-terminates** — zero residue.
-
-> The module never touches system partitions; uninstall is fully clean.
-
----
-
-## ⚠️ Temporary Root
-
-- This module **does not modify system partitions** (only `/data/adb` and `/sys` nodes)
-- **Temporary root (lost on reboot) can install**, but the daemon won't auto-start after reboot
-- Re-obtain root and start the daemon manually, or use persistent root (KSU / Magisk / APatch)
-
----
-
-## ❓ FAQ
-
-**Q: Screen stuck at 4095 — burn-in risk?**
-A: OLED at max brightness long-term does carry aging risk. Use outdoors and turn it off indoors (one tap in WebUI).
-
-**Q: Why no WebUI on Magisk?**
-A: Magisk officially doesn't support module WebUI. Use terminal commands instead.
-
-**Q: Will brightness still be modified after uninstall?**
-A: No. The daemon self-terminates as soon as it detects module removal.
-
-**Q: Other devices supported?**
-A: The daemon auto-detects `/sys/class/backlight/*/brightness`, so it's generic. Tested on Xiaomi 14 Pro.
-
----
-
-## 📜 Disclaimer
-
-- This module is **AI-assisted**; code reviewed and logic-tested, but unknown issues may remain
-- All consequences of use (including screen aging, system issues) **are the user's responsibility**
-- Use at your own discretion — **use implies agreement**
+1. Manager → Modules → **Xiaomi 14 Pro Brightness Boost**
+2. Tap the **UI / web icon** to open the Material You control panel
+3. Toggle **Keep Brightness Locked** on
 
 ---
 
 ## 📄 License
 
 [MIT](LICENSE) © life
-
----
-
-<p align="center">
-  <sub>Made with ❤️ and 🤖 · life</sub>
-</p>

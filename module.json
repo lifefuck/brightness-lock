@@ -1,6 +1,6 @@
 {
     "metamodule": false,
-    "summary": "亮度锁定器 - 对抗温控降亮度，屏幕被压低自动拉回目标值。Brightness Lock - fight thermal throttling, auto-restore dimmed brightness. 默认关闭，KSU/APatch WebUI 控制，兼容 Magisk/狐狸面具。",
+    "summary": "小米14 Pro亮度提升 - 对抗温控降亮度，屏幕被压低瞬时拉回目标值。Xiaomi 14 Pro Brightness Boost - fight thermal throttling, instant auto-restore dimmed brightness. 默认关闭，KSU/APatch WebUI 控制，兼容 Magisk/狐狸面具。",
     "sourceUrl": "https://github.com/lifefuck/brightness-lock",
     "additionalAuthors": [
         {
